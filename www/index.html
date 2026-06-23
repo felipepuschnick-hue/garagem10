@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Garagem 10</title>
+
+<!-- PWA -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Garagem 10">
+<meta name="theme-color" content="#0d0f14">
+<meta name="application-name" content="Garagem 10">
+<meta name="description" content="Controle de manutenção veicular">
+
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="icon" href="./icons/icon-192.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/style.css">
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     TELAS DE AUTENTICAÇÃO
+     ══════════════════════════════════════════ -->
+<div id="auth-screens">
+  <div class="auth-wrap">
+    <div class="auth-logo">🚗 Garagem <span>10</span></div>
+    <div class="auth-tagline">Controle de manutenção veicular</div>
+    <div class="auth-error" id="auth-error"></div>
+
+    <!-- LOGIN -->
+    <div class="auth-panel" id="auth-panel-login">
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input class="form-input" id="login-email" type="email" placeholder="seu@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" id="login-senha" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div style="text-align:right;margin-bottom:16px">
+        <a class="auth-switch" style="font-size:12px" onclick="setAuthMode('recuperar')"><span style="color:var(--accent);cursor:pointer;font-weight:600">Esqueci minha senha</span></a>
+      </div>
+      <button class="add-btn" onclick="fazerLogin()">Entrar</button>
+      <div class="auth-divider">ou</div>
+      <button class="btn-google" onclick="fazerLoginGoogle()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20.5H24v7h11.3C33.7 31.7 29.3 35 24 35c-6.1 0-11-4.9-11-11s4.9-11 11-11c2.8 0 5.3 1 7.3 2.7l5.7-5.7C33.6 6.5 29 4.5 24 4.5 12.7 4.5 3.5 13.7 3.5 25S12.7 45.5 24 45.5 44.5 36.3 44.5 25c0-1.5-.2-3-.5-4.5z"/><path fill="#FF3D00" d="M6.3 14.7l5.8 4.2C13.6 15.1 18.4 11.5 24 11.5c2.8 0 5.3 1 7.3 2.7l5.7-5.7C33.6 6.5 29 4.5 24 4.5c-7.7 0-14.3 4.4-17.7 10.2z"/><path fill="#4CAF50" d="M24 45.5c5 0 9.6-1.9 13-5.1l-6-5.1c-1.9 1.4-4.4 2.2-7 2.2-5.3 0-9.7-3.3-11.3-8l-5.9 4.5C9.7 40.9 16.3 45.5 24 45.5z"/><path fill="#1976D2" d="M43.6 20.5H42V20.5H24v7h11.3c-.8 2.3-2.3 4.2-4.3 5.6l6 5.1C40.7 35 44.5 30.5 44.5 25c0-1.5-.2-3-.5-4.5z"/></svg>
+        Continuar com Google
+      </button>
+      <div class="auth-switch">Não tem conta? <a onclick="setAuthMode('cadastro')">Cadastre-se</a></div>
+    </div>
+
+    <!-- CADASTRO -->
+    <div class="auth-panel" id="auth-panel-cadastro" style="display:none">
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input class="form-input" id="cad-email" type="email" placeholder="seu@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" id="cad-senha" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirmar Senha</label>
+        <input class="form-input" id="cad-senha2" type="password" placeholder="Repita a senha" autocomplete="new-password">
+      </div>
+      <button class="add-btn" onclick="fazerCadastro()">Criar Conta</button>
+      <div class="auth-divider">ou</div>
+      <button class="btn-google" onclick="fazerLoginGoogle()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20.5H24v7h11.3C33.7 31.7 29.3 35 24 35c-6.1 0-11-4.9-11-11s4.9-11 11-11c2.8 0 5.3 1 7.3 2.7l5.7-5.7C33.6 6.5 29 4.5 24 4.5 12.7 4.5 3.5 13.7 3.5 25S12.7 45.5 24 45.5 44.5 36.3 44.5 25c0-1.5-.2-3-.5-4.5z"/><path fill="#FF3D00" d="M6.3 14.7l5.8 4.2C13.6 15.1 18.4 11.5 24 11.5c2.8 0 5.3 1 7.3 2.7l5.7-5.7C33.6 6.5 29 4.5 24 4.5c-7.7 0-14.3 4.4-17.7 10.2z"/><path fill="#4CAF50" d="M24 45.5c5 0 9.6-1.9 13-5.1l-6-5.1c-1.9 1.4-4.4 2.2-7 2.2-5.3 0-9.7-3.3-11.3-8l-5.9 4.5C9.7 40.9 16.3 45.5 24 45.5z"/><path fill="#1976D2" d="M43.6 20.5H42V20.5H24v7h11.3c-.8 2.3-2.3 4.2-4.3 5.6l6 5.1C40.7 35 44.5 30.5 44.5 25c0-1.5-.2-3-.5-4.5z"/></svg>
+        Continuar com Google
+      </button>
+      <div class="auth-switch">Já tem conta? <a onclick="setAuthMode('login')">Entrar</a></div>
+    </div>
+
+    <!-- RECUPERAR SENHA -->
+    <div class="auth-panel" id="auth-panel-recuperar" style="display:none">
+      <div class="section-sub" style="margin-bottom:18px">Informe seu e-mail para receber um link de recuperação de senha.</div>
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input class="form-input" id="rec-email" type="email" placeholder="seu@email.com" autocomplete="email">
+      </div>
+      <button class="add-btn" onclick="enviarRecuperacao()">Enviar Link</button>
+      <div class="auth-switch"><a onclick="setAuthMode('login')">← Voltar para o login</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELAS DO APP (logado)
+     ══════════════════════════════════════════ -->
+<div id="app-screens" style="display:none">
+<header>
+  <div class="logo">🚗 Garagem <span>10</span></div>
+  <div class="header-sub">
+    <span id="header-sub"></span>
+    <button class="header-icon-btn" onclick="goTo('screen-perfil')" title="Perfil">👤</button>
+  </div>
+</header>
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="section-title" style="margin-top:4px">Olá! 👋</div>
+  <div class="section-sub">Acompanhe seus veículos e manutenções</div>
+  <div class="dash-grid" id="dash-grid"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px">Meus Veículos</div>
+  </div>
+  <div class="vehicle-list" id="vehicle-list"></div>
+  <button class="add-btn" onclick="goTo('screen-add-veiculo')">＋ Adicionar Veículo</button>
+</div>
+
+<!-- ADD VEHICLE -->
+<div class="screen" id="screen-add-veiculo">
+  <button class="back-btn" onclick="goTo('screen-home')">← Voltar</button>
+  <div class="section-title">Novo Veículo</div>
+  <div class="section-sub">Preencha as informações do veículo</div>
+  <div class="form-group">
+    <label class="form-label">Foto do Veículo</label>
+    <input type="file" id="vfoto" accept="image/*" style="display:none" onchange="previewFoto(this)">
+    <div class="photo-upload" onclick="document.getElementById('vfoto').click()" id="foto-preview">
+      <div style="font-size:32px">📷</div>
+      <div>Toque para adicionar foto</div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Nome / Apelido *</label>
+    <input class="form-input" id="v-nome" placeholder="Ex: Meu Carro, Civic Branco...">
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Marca</label>
+      <input class="form-input" id="v-marca" placeholder="Ex: Toyota">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Modelo</label>
+      <input class="form-input" id="v-modelo" placeholder="Ex: Corolla">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Ano</label>
+      <input class="form-input" id="v-ano" type="number" placeholder="Ex: 2021">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cor</label>
+      <input class="form-input" id="v-cor" placeholder="Ex: Prata">
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Placa</label>
+    <input class="form-input" id="v-placa" placeholder="AAA-0000 ou AAA0A00" style="text-transform:uppercase">
+  </div>
+  <div class="form-group">
+    <label class="form-label">RENAVAM</label>
+    <input class="form-input" id="v-renavam" placeholder="11 dígitos" type="number">
+  </div>
+  <div class="form-group">
+    <label class="form-label">KM Atual</label>
+    <input class="form-input" id="v-km" placeholder="Ex: 45000" type="number">
+  </div>
+  <button class="add-btn" onclick="salvarVeiculo()" style="margin-top:6px">✓ Salvar Veículo</button>
+</div>
+
+<!-- EDIT VEHICLE -->
+<div class="screen" id="screen-editar-veiculo">
+  <button class="back-btn" onclick="goTo('screen-veiculo')">← Voltar</button>
+  <div class="section-title">Editar Veículo</div>
+  <div class="section-sub">Atualize as informações do veículo</div>
+  <div class="form-group">
+    <label class="form-label">Foto do Veículo</label>
+    <input type="file" id="vfoto-edit" accept="image/*" style="display:none" onchange="previewFotoEdit(this)">
+    <div class="photo-upload" id="foto-preview-edit">
+      <div style="font-size:32px">📷</div>
+      <div>Toque para adicionar foto</div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Nome / Apelido *</label>
+    <input class="form-input" id="ve-nome" placeholder="Ex: Meu Carro, Civic Branco...">
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Marca</label>
+      <input class="form-input" id="ve-marca" placeholder="Ex: Toyota">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Modelo</label>
+      <input class="form-input" id="ve-modelo" placeholder="Ex: Corolla">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Ano</label>
+      <input class="form-input" id="ve-ano" type="number" placeholder="Ex: 2021">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cor</label>
+      <input class="form-input" id="ve-cor" placeholder="Ex: Prata">
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Placa</label>
+    <input class="form-input" id="ve-placa" placeholder="AAA-0000 ou AAA0A00" style="text-transform:uppercase">
+  </div>
+  <div class="form-group">
+    <label class="form-label">RENAVAM</label>
+    <input class="form-input" id="ve-renavam" placeholder="11 dígitos" type="number">
+  </div>
+  <div class="form-group">
+    <label class="form-label">KM Atual</label>
+    <input class="form-input" id="ve-km" placeholder="Ex: 45000" type="number">
+  </div>
+  <button class="add-btn" onclick="salvarEdicaoVeiculo()" style="margin-top:6px">✓ Salvar Alterações</button>
+</div>
+
+<!-- VEHICLE DETAIL -->
+<div class="screen" id="screen-veiculo">
+  <button class="back-btn" onclick="goTo('screen-home')">← Minha Garagem</button>
+  <div id="vd-header"></div>
+  <div class="stat-row" id="vd-stats"></div>
+  <div id="vd-alertas"></div>
+  <div class="action-row">
+    <button class="add-btn" onclick="goTo('screen-add-manutencao')">🔧 Nova Manutenção</button>
+    <button class="add-btn outline" onclick="goTo('screen-historico')">📋 Histórico</button>
+  </div>
+  <div style="text-align:right;margin-top:-8px;margin-bottom:16px">
+    <button onclick="excluirVeiculo()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Excluir veículo</button>
+  </div>
+  <hr class="divider">
+  <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:12px">Últimas Manutenções</div>
+  <div id="vd-recent"></div>
+</div>
+
+<!-- ADD MANUTENCAO -->
+<div class="screen" id="screen-add-manutencao">
+  <button class="back-btn" onclick="goTo('screen-veiculo')">← Voltar</button>
+  <div class="section-title">Nova Manutenção</div>
+  <div class="section-sub" id="manut-sub"></div>
+  <div class="form-group">
+    <label class="form-label">Tipo de Serviço</label>
+    <select class="form-input" id="m-tipo">
+      <option value="Troca de óleo|motor">🛢 Troca de óleo</option>
+      <option value="Freios|freio">🛑 Freios</option>
+      <option value="Pneus|pneu">🔄 Pneus</option>
+      <option value="Suspensão|suspensao">🔩 Suspensão</option>
+      <option value="Bateria|eletrico">⚡ Bateria</option>
+      <option value="Revisão Geral|motor">🔧 Revisão Geral</option>
+      <option value="Alinhamento e Balanceamento|pneu">⚖️ Alinhamento e Balanceamento</option>
+      <option value="Filtro de Ar|motor">💨 Filtro de Ar</option>
+      <option value="Filtro de Combustível|motor">⛽ Filtro de Combustível</option>
+      <option value="Velas de Ignição|eletrico">✨ Velas de Ignição</option>
+      <option value="Correia Dentada|motor">⚙️ Correia Dentada</option>
+      <option value="Ar Condicionado|eletrico">❄️ Ar Condicionado</option>
+      <option value="Outro|outro">📝 Outro</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">KM na Revisão</label>
+      <input class="form-input" id="m-km" type="number" placeholder="Ex: 45000">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Valor Gasto (R$)</label>
+      <input class="form-input" id="m-valor" type="number" step="0.01" placeholder="Ex: 150.00">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Data do Serviço *</label>
+      <input class="form-input" id="m-data" type="date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Próxima Revisão</label>
+      <input class="form-input" id="m-proxima" type="date">
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Oficina / Local</label>
+    <input class="form-input" id="m-oficina" placeholder="Ex: Auto Center XYZ">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Observações</label>
+    <input class="form-input" id="m-obs" placeholder="Detalhe do serviço...">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Comprovante (PDF ou Imagem)</label>
+    <input type="file" id="m-arquivo" accept=".pdf,image/*" style="display:none" onchange="previewArquivo(this)">
+    <div class="photo-upload" onclick="triggerArquivo(event)" id="arquivo-preview" style="height:80px">
+      <div style="font-size:22px">📎</div>
+      <div id="arquivo-label">Toque para anexar</div>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="toggle-row">
+      <div>
+        <div style="font-size:14px">🔔 Ativar Lembrete</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Alertar na data da próxima revisão</div>
+      </div>
+      <div class="toggle" id="lembrete-toggle" onclick="toggleLembrete()"></div>
+    </div>
+  </div>
+  <button class="add-btn" onclick="salvarManutencao()" style="margin-top:6px">✓ Registrar Manutenção</button>
+</div>
+
+<!-- HISTORICO -->
+<div class="screen" id="screen-historico">
+  <button class="back-btn" onclick="goTo('screen-veiculo')">← Voltar</button>
+  <div class="section-title">Histórico</div>
+  <div class="section-sub" id="hist-sub"></div>
+  <div class="tabs" id="hist-tabs">
+    <div class="tab active" onclick="setFiltro('todos',this)">Todos</div>
+    <div class="tab" onclick="setFiltro('motor',this)">Motor</div>
+    <div class="tab" onclick="setFiltro('freio',this)">Freios</div>
+    <div class="tab" onclick="setFiltro('pneu',this)">Pneus</div>
+    <div class="tab" onclick="setFiltro('suspensao',this)">Suspensão</div>
+    <div class="tab" onclick="setFiltro('eletrico',this)">Elétrico</div>
+  </div>
+  <div id="hist-total" style="font-size:13px;color:var(--muted2);margin-bottom:14px"></div>
+  <div id="hist-list"></div>
+</div>
+
+<!-- MANUT DETAIL / EDIT -->
+<div class="screen" id="screen-manut-detalhe">
+  <button class="back-btn" onclick="goTo('screen-historico')">← Histórico</button>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div class="section-title" style="margin-bottom:0">Manutenção</div>
+    <button id="btn-editar-manut" onclick="toggleEditManut()" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:7px 14px;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer">✏️ Editar</button>
+  </div>
+
+  <!-- VIEW MODE -->
+  <div id="manut-view">
+    <div id="mv-content"></div>
+  </div>
+
+  <!-- EDIT MODE -->
+  <div id="manut-edit" style="display:none">
+    <div class="form-group">
+      <label class="form-label">Tipo de Serviço</label>
+      <select class="form-input" id="me-tipo">
+        <option value="Troca de óleo|motor">🛢 Troca de óleo</option>
+        <option value="Freios|freio">🛑 Freios</option>
+        <option value="Pneus|pneu">🔄 Pneus</option>
+        <option value="Suspensão|suspensao">🔩 Suspensão</option>
+        <option value="Bateria|eletrico">⚡ Bateria</option>
+        <option value="Revisão Geral|motor">🔧 Revisão Geral</option>
+        <option value="Alinhamento e Balanceamento|pneu">⚖️ Alinhamento e Balanceamento</option>
+        <option value="Filtro de Ar|motor">💨 Filtro de Ar</option>
+        <option value="Filtro de Combustível|motor">⛽ Filtro de Combustível</option>
+        <option value="Velas de Ignição|eletrico">✨ Velas de Ignição</option>
+        <option value="Correia Dentada|motor">⚙️ Correia Dentada</option>
+        <option value="Ar Condicionado|eletrico">❄️ Ar Condicionado</option>
+        <option value="Outro|outro">📝 Outro</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">KM</label><input class="form-input" id="me-km" type="number" placeholder="Ex: 45000"></div>
+      <div class="form-group"><label class="form-label">Valor (R$)</label><input class="form-input" id="me-valor" type="number" step="0.01" placeholder="Ex: 150.00"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Data *</label><input class="form-input" id="me-data" type="date"></div>
+      <div class="form-group"><label class="form-label">Próxima Revisão</label><input class="form-input" id="me-proxima" type="date"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Oficina / Local</label><input class="form-input" id="me-oficina" placeholder="Ex: Auto Center XYZ"></div>
+    <div class="form-group"><label class="form-label">Observações</label><input class="form-input" id="me-obs" placeholder="Detalhe..."></div>
+    <div class="form-group">
+      <div class="toggle-row">
+        <div><div style="font-size:14px">🔔 Lembrete</div></div>
+        <div class="toggle" id="me-lembrete-toggle" onclick="toggleEditLembrete()"></div>
+      </div>
+    </div>
+    <button class="add-btn" onclick="salvarEdicaoManut()">✓ Salvar Alterações</button>
+  </div>
+</div>
+
+<!-- PERFIL -->
+<div class="screen" id="screen-perfil">
+  <button class="back-btn" onclick="goTo('screen-home')">← Voltar</button>
+  <div class="section-title">Minha Conta</div>
+  <div class="profile-header">
+    <div class="profile-avatar" id="perfil-avatar">?</div>
+    <div class="profile-email" id="perfil-email"></div>
+  </div>
+  <div class="menu-item danger" onclick="fazerLogout()">
+    <div class="mi-left"><span class="mi-icon">🚪</span> Sair da conta</div>
+    <span class="mi-arrow">›</span>
+  </div>
+</div>
+
+</div><!-- /app-screens -->
+
+<!-- Scripts: ordem importa -->
+<script src="./js/config.js"></script>
+<script src="./js/ui-helpers.js"></script>
+<script src="./js/db.js"></script>
+<script src="./js/app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(e => console.warn('[Garagem10] SW falhou:', e));
+  });
+}
+</script>
+</body>
+</html>
