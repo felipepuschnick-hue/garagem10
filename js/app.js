@@ -16,6 +16,20 @@ let authMode = "login"; // 'login' | 'cadastro' | 'recuperar'
 
 const catIcons = { motor: "🛢", freio: "🛑", pneu: "🔄", suspensao: "🔩", eletrico: "⚡", outro: "📝" };
 
+const capasVeiculo = {
+  sedan: "images/capas/capa-sedan.webp",
+  suv: "images/capas/capa-suv.webp",
+  pickup: "images/capas/capa-pickup.webp",
+  moto: "images/capas/capa-moto.webp"
+};
+
+function imagemCapaVeiculo(v) {
+  // Foto própria do usuário tem prioridade; senão usa a capa ilustrada pelo tipo
+  if (v.foto_url) return `<img src="${v.foto_url}">`;
+  const capa = capasVeiculo[v.tipo_veiculo] || capasVeiculo.sedan;
+  return `<img src="${capa}" style="opacity:.92">`;
+}
+
 // ─────────────────────────────────────────
 //  BOOTSTRAP / AUTH STATE
 // ─────────────────────────────────────────
@@ -238,7 +252,7 @@ async function renderHome() {
     `;
 
     if (!veiculos.length) {
-      vl.innerHTML = `<div class="empty"><div class="ei">🚘</div><p>Nenhum veículo cadastrado ainda.<br>Adicione seu primeiro veículo!</p></div>`;
+      vl.innerHTML = `<div class="empty"><img src="images/estados/empty-state.webp" style="max-width:240px;width:100%;border-radius:14px;margin-bottom:14px"><p>Nenhum veículo cadastrado ainda.<br>Adicione seu primeiro veículo!</p></div>`;
       return;
     }
     vl.innerHTML = veiculos.map(v => {
@@ -246,7 +260,7 @@ async function renderHome() {
       const gasto = mts.reduce((s, m) => s + (parseFloat(m.valor) || 0), 0);
       return `
         <div class="vehicle-card" onclick="abrirVeiculo('${v.id}')">
-          <div class="vehicle-photo">${v.foto_url ? `<img src="${v.foto_url}">` : '🚗'}</div>
+          <div class="vehicle-photo">${imagemCapaVeiculo(v)}</div>
           <div class="vehicle-info">
             <div class="vehicle-name">${escapeHtml(v.nome)}</div>
             <div class="vehicle-meta">${[v.marca, v.modelo, v.ano ? '· ' + v.ano : ''].filter(Boolean).map(escapeHtml).join(' ')}</div>
@@ -273,6 +287,7 @@ function abrirVeiculo(id) {
 function initVeiculoForm() {
   fotoFile = null;
   ["v-nome", "v-marca", "v-modelo", "v-ano", "v-cor", "v-placa", "v-renavam", "v-km"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("v-tipo-veiculo").value = "sedan";
   const fp = document.getElementById("foto-preview");
   fp.innerHTML = `<input type="file" id="vfoto" accept="image/*" style="display:none" onchange="previewFoto(this)"><div style="font-size:32px">📷</div><div>Toque para adicionar foto</div>`;
   fp.onclick = () => document.getElementById("vfoto").click();
@@ -303,6 +318,7 @@ async function salvarVeiculo() {
     }
     const v = await db.criarVeiculo(session.user.id, {
       nome,
+      tipo_veiculo: document.getElementById("v-tipo-veiculo").value,
       marca: document.getElementById("v-marca").value.trim(),
       modelo: document.getElementById("v-modelo").value.trim(),
       ano: document.getElementById("v-ano").value,
@@ -329,6 +345,7 @@ async function initEditarVeiculoForm() {
   if (!v) return;
   fotoFile = null;
   document.getElementById("ve-nome").value = v.nome || "";
+  document.getElementById("ve-tipo-veiculo").value = v.tipo_veiculo || "sedan";
   document.getElementById("ve-marca").value = v.marca || "";
   document.getElementById("ve-modelo").value = v.modelo || "";
   document.getElementById("ve-ano").value = v.ano || "";
@@ -365,6 +382,7 @@ async function salvarEdicaoVeiculo() {
   try {
     const payload = {
       nome,
+      tipo_veiculo: document.getElementById("ve-tipo-veiculo").value,
       marca: document.getElementById("ve-marca").value.trim(),
       modelo: document.getElementById("ve-modelo").value.trim(),
       ano: document.getElementById("ve-ano").value,
@@ -414,7 +432,7 @@ async function renderVehicleDetail() {
 
   document.getElementById("vd-header").innerHTML = `
     <div class="vehicle-detail-header">
-      <div class="vehicle-cover">${v.foto_url ? `<img src="${v.foto_url}">` : '🚗'}</div>
+      <div class="vehicle-cover">${imagemCapaVeiculo(v)}</div>
       <div class="vehicle-detail-info">
         <div class="vehicle-detail-name">${escapeHtml(v.nome)}</div>
         <div class="vehicle-detail-meta">${[v.marca, v.modelo, v.ano].filter(Boolean).map(escapeHtml).join(' · ')}</div>
@@ -635,12 +653,26 @@ function abrirManutDetalhe(id) {
   document.getElementById("btn-editar-manut").textContent = "✏️ Editar";
 }
 
+const imagensCategoria = {
+  motor: "images/categorias/icon-motor.webp",
+  freio: "images/categorias/icon-freio.webp",
+  pneu: "images/categorias/icon-pneu.webp",
+  suspensao: "images/categorias/icon-suspensao.webp",
+  eletrico: "images/categorias/icon-eletrico.webp"
+};
+
 function renderManutView() {
   const todas = manutencoesCache[atualId] || [];
   const m = todas.find(x => x.id === manutEditId);
   if (!m) return;
   const icon = catIcons[m.cat] || "🔧";
+  const imagemCategoria = imagensCategoria[m.cat];
   document.getElementById("mv-content").innerHTML = `
+    ${imagemCategoria
+      ? `<div style="width:100%;height:160px;background:var(--surface);border:1px solid var(--border);border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;overflow:hidden">
+           <img src="${imagemCategoria}" style="width:130px;height:130px;object-fit:contain">
+         </div>`
+      : ''}
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
       <div class="maint-icon ${m.cat}" style="width:52px;height:52px;font-size:24px">${icon}</div>
       <div>

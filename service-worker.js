@@ -2,7 +2,7 @@
 //  GARAGEM 10 — SERVICE WORKER
 // ══════════════════════════════════════════
 
-const CACHE = 'garagem10-v1';
+const CACHE = 'garagem10-v3';
 const ASSETS = [
   './index.html',
   './css/style.css',
@@ -12,7 +12,17 @@ const ASSETS = [
   './js/app.js',
   './manifest.json',
   './icons/icon-192.png',
-  './icons/icon-512.png'
+  './icons/icon-512.png',
+  './images/capas/capa-sedan.webp',
+  './images/capas/capa-suv.webp',
+  './images/capas/capa-pickup.webp',
+  './images/capas/capa-moto.webp',
+  './images/estados/empty-state.webp',
+  './images/categorias/icon-motor.webp',
+  './images/categorias/icon-freio.webp',
+  './images/categorias/icon-pneu.webp',
+  './images/categorias/icon-suspensao.webp',
+  './images/categorias/icon-eletrico.webp'
 ];
 
 self.addEventListener('install', e => {
