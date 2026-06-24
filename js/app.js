@@ -12,6 +12,7 @@ let melembreteOn = false;
 let fotoFile = null;
 let arquivoFile = null;
 let manutEditId = null;
+let origemManutDetalhe = "screen-historico"; // para onde voltar ao saiir da tela de detalhe da manutenção
 let authMode = "login"; // 'login' | 'cadastro' | 'recuperar'
 
 const catIcons = { motor: "🛢", freio: "🛑", pneu: "🔄", suspensao: "🔩", eletrico: "⚡", outro: "📝" };
@@ -481,7 +482,7 @@ async function renderVehicleDetail() {
 
   const recentes = sorted.slice(0, 3);
   document.getElementById("vd-recent").innerHTML = recentes.length
-    ? recentes.map(m => manutCard(m, false)).join('')
+    ? recentes.map(m => manutCard(m, true, 'screen-veiculo')).join('')
     : `<div class="empty"><div class="ei">🔧</div><p>Nenhuma manutenção registrada ainda.</p></div>`;
 }
 
@@ -602,14 +603,14 @@ function renderFiltrado() {
     ? `${lista.length} registro(s) · Total: <strong style="color:var(--green)">R$ ${totalFiltro.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>`
     : '';
   document.getElementById("hist-list").innerHTML = lista.length
-    ? lista.map(m => manutCard(m, true)).join('')
+    ? lista.map(m => manutCard(m, true, 'screen-historico')).join('')
     : `<div class="empty"><div class="ei">📋</div><p>Nenhuma manutenção nessa categoria.</p></div>`;
 }
 
-function manutCard(m, clicavel) {
+function manutCard(m, clicavel, origem) {
   const icon = catIcons[m.cat] || "🔧";
   return `
-    <div class="maint-card" ${clicavel ? `onclick="abrirManutDetalhe('${m.id}')" style="cursor:pointer"` : ''}>
+    <div class="maint-card" ${clicavel ? `onclick="abrirManutDetalhe('${m.id}', '${origem}')" style="cursor:pointer"` : ''}>
       <div class="maint-icon ${m.cat}">${icon}</div>
       <div class="maint-info">
         <div class="maint-title">${escapeHtml(m.tipo)}</div>
@@ -644,13 +645,18 @@ async function abrirArquivo(manutId) {
 //  DETALHE / EDIÇÃO DE MANUTENÇÃO
 // ─────────────────────────────────────────
 
-function abrirManutDetalhe(id) {
+function abrirManutDetalhe(id, origem) {
   manutEditId = id;
+  origemManutDetalhe = origem || "screen-historico";
   goTo("screen-manut-detalhe");
   renderManutView();
   document.getElementById("manut-view").style.display = "";
   document.getElementById("manut-edit").style.display = "none";
   document.getElementById("btn-editar-manut").textContent = "✏️ Editar";
+}
+
+function voltarDoDetalheManut() {
+  goTo(origemManutDetalhe);
 }
 
 const imagensCategoria = {

@@ -134,6 +134,15 @@
     <label class="form-label">Nome / Apelido *</label>
     <input class="form-input" id="v-nome" placeholder="Ex: Meu Carro, Civic Branco...">
   </div>
+  <div class="form-group">
+    <label class="form-label">Tipo de Veículo</label>
+    <select class="form-input" id="v-tipo-veiculo">
+      <option value="sedan">🚗 Sedan</option>
+      <option value="suv">🚙 SUV</option>
+      <option value="pickup">🛻 Pickup</option>
+      <option value="moto">🏍 Moto</option>
+    </select>
+  </div>
   <div class="form-row">
     <div class="form-group">
       <label class="form-label">Marca</label>
@@ -185,6 +194,15 @@
   <div class="form-group">
     <label class="form-label">Nome / Apelido *</label>
     <input class="form-input" id="ve-nome" placeholder="Ex: Meu Carro, Civic Branco...">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Tipo de Veículo</label>
+    <select class="form-input" id="ve-tipo-veiculo">
+      <option value="sedan">🚗 Sedan</option>
+      <option value="suv">🚙 SUV</option>
+      <option value="pickup">🛻 Pickup</option>
+      <option value="moto">🏍 Moto</option>
+    </select>
   </div>
   <div class="form-row">
     <div class="form-group">
@@ -329,7 +347,7 @@
 
 <!-- MANUT DETAIL / EDIT -->
 <div class="screen" id="screen-manut-detalhe">
-  <button class="back-btn" onclick="goTo('screen-historico')">← Histórico</button>
+  <button class="back-btn" id="btn-voltar-manut" onclick="voltarDoDetalheManut()">← Voltar</button>
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
     <div class="section-title" style="margin-bottom:0">Manutenção</div>
     <button id="btn-editar-manut" onclick="toggleEditManut()" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:7px 14px;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer">✏️ Editar</button>
